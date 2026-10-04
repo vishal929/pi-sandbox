@@ -6,8 +6,15 @@
     "skills": "ask",
     "special": "ask"
   },
+  // nothing really to hide in the container environment
+  // we can let the model read how it wants to
+  // its important to set project level permissions for any projects leveraging the agent though
   "tools": {
     "read": "allow",
+    "ls": "allow",
+    "cd": "allow",
+    "grep": "allow",
+    "find": "allow",
     "write": "deny"
   }
 }
