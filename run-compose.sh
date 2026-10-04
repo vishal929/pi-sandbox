@@ -36,5 +36,9 @@ envsubst < "$TEMPLATE" > "$COMPOSE_FILE"
 echo "Launching with extra volumes..."
 podman compose -f "$COMPOSE_FILE" up -d
 
+# trap the kill operation so the stack 
+# is immediately torn down on disconnect
+trap "podman compose -f $COMPOSE_FILE down -v" EXIT INT TERM
+
 echo "Container is running. Attaching to pi-agent..."
 podman attach pi-agent
