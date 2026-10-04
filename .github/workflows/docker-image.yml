@@ -39,6 +39,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
   cleanup:
+    needs: build-and-push-image
     runs-on: ubuntu-latest
     permissions:
       packages: write
