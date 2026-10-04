@@ -1,0 +1,16 @@
+{
+  "$schema": "https://renovatebot.com",
+  "extends": [
+    "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update npm global tool versions declared as ARGs or ENVs in Dockerfiles",
+      "fileMatch": ["(^|/|\\.)Dockerfile$", "(^|/)Dockerfile[^/]*$"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>npm)\\s+depName=(?<depName>[^\\s]+)\\s+(?:ARG|ENV)\\s+[^\\s]+_VERSION=(?<currentValue>[^\\s]+)"
+      ]
+    }
+  ]
+}
