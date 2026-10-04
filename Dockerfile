@@ -23,7 +23,8 @@ ENV HOME=/home/node
 # renovate: datasource=npm depName=@earendil-works/pi-coding-agent
 ARG PI_VERSION=1.0.2
 
-RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent@${PI_VERSION}
+RUN sudo chown -R node /usr/local/
+RUN npm install -g --ignore-scripts "@earendil-works/pi-coding-agent@${PI_VERSION}"
 
 RUN export PATH="/home/node/.pi/agent/bin:$PATH"
 ENV PATH="/home/node/.pi/agent/bin:${PATH}"
