@@ -8,4 +8,5 @@ wikipedia.org
 pi.dev
 .npmjs.org
 opencode.ai
-go.dev
+.go.dev
+.golang.org
