@@ -16,6 +16,7 @@ services:
   pi-agent:
     image: ghcr.io/vishal929/pi-sandbox:latest
     container_name: pi-agent
+    pull_policy: newer
     volumes:
       - pi-volume:/root/.pi/agent/
 ${DYNAMIC_VOLUMES}
