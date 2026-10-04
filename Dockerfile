@@ -33,5 +33,5 @@ LABEL org.opencontainers.image.title="Pi Agent Sandbox" \
       org.opencontainers.image.source="https://github.com" \
       org.opencontainers.image.licenses="MIT"
 
-# start bash, so that the user starts pi in a given location
-CMD ["/bin/bash"]
+# start pi automatically, have to quit and start pi in a different directory to have permissions enforced 
+CMD ["pi"]
