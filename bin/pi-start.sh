@@ -8,17 +8,17 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 INVOCATION_DIR="$PWD"
 
 # Path to template and generated file
-TEMPLATE="$SCRIPT_DIR/podman-compose.template.yml"
-COMPOSE_FILE="$SCRIPT_DIR/podman-compose.generated.yml"
+TEMPLATE="$SCRIPT_DIR/../podman-compose.template.yml"
+COMPOSE_FILE="$SCRIPT_DIR/../podman-compose.generated.yml"
 
 # Build the volumes string
 # Arguments passed: /path/to/host1 /path/to/host2 ...
 
 # bake in permission system files to the volume lines
-VOL_LINES="      - $SCRIPT_DIR/extensions/pi-permission-system/pi-permissions.jsonc:/home/node/.pi/agent/extensions/pi-permission-system/pi-permissions.jsonc:ro
+VOL_LINES="      - $SCRIPT_DIR/../extensions/pi-permission-system/pi-permissions.jsonc:/home/node/.pi/agent/extensions/pi-permission-system/pi-permissions.jsonc:ro
 "
 # mount the skill files, so if pi wants to customize them, we can commit them back
-VOL_LINES="${VOL_LINES}      - $SCRIPT_DIR/skills:/home/node/.pi/agent/skills:Z
+VOL_LINES="${VOL_LINES}      - $SCRIPT_DIR/../skills:/home/node/.pi/agent/skills:Z
 "
 for path in "$@"; do
     # Ensure absolute path
@@ -29,9 +29,9 @@ for path in "$@"; do
 "
 done
 
-# Use envsubst to create the actual compose file
+# Use awk to substitute and create the actual compose file
 export DYNAMIC_VOLUMES="${VOL_LINES}"
-envsubst < "$TEMPLATE" > "$COMPOSE_FILE"
+awk '{gsub(/\${DYNAMIC_VOLUMES}/, ENVIRON["DYNAMIC_VOLUMES"]); print}' "$TEMPLATE" > "$COMPOSE_FILE"
 
 echo "Launching with extra volumes..."
 podman compose -f "$COMPOSE_FILE" up -d
