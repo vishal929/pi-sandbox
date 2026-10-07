@@ -36,7 +36,8 @@ Execute the plan strictly in the order defined in **Section 2 & 3** of the plan 
    - For each file specified in the chunk, locate or create the file and apply the exact steps described.
    - Use precise edits (`edit` tool) or complete file creation (`write` tool for new files).
    - Ensure syntax correctness, type safety, package/module import consistency, and alignment with surrounding code. This may involve running linters or building code.
-   - Ensure code is properly documented and maintainability is preferred
+   - Ensure code is properly documented (code comments or readme.md files if code comments are not applicable)
+   - Prefer maintainable code over overly-optimized code (someone completely new should be able to understand the code. no sphaghetti code.)
 4. **Self-Check:** Review your changes against the step-by-step instructions before moving on.
 
 #### If the item is a Test Barrier:
