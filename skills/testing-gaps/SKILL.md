@@ -1,6 +1,6 @@
 ---
-name: execute
-description: Ingests and executes a technical plan markdown file step-by-step with testing barriers. Use when implementing a previously planned feature, refactor, or architectural change from a plan file.
+name: testing-gaps
+description: Ingests a markdown file listing current gaps in code coverage of the project. Used when not all code was covered during implementation of a feature.
 ---
 
 # Execute Technical Plan
@@ -53,7 +53,7 @@ Execute the plan strictly in the order defined in **Section 2 & 3** of the plan 
 
 ### Step 3: Final Verification & Completion
 1. Run the full test suite or all test barriers to ensure no regressions.
-2. Provide a concise summary of implemented changes, files modified, and test results to the user. This can go into an output "{plan_name}_changes.md"
+2. Provide a concise summary of implemented changes, files modified, and test results to the user.
 3. Provide README's for guidance on using the generated output
    - READMEs should include:
       - any dependencies needed
