@@ -53,7 +53,7 @@ Execute the plan strictly in the order defined in **Section 2 & 3** of the plan 
 
 ### Step 3: Final Verification & Completion
 1. Run the full test suite or all test barriers to ensure no regressions.
-2. Provide a concise summary of implemented changes, files modified, and test results to the user. This can go into an output "{plan_name}_changes.md"
+2. Provide a concise summary of implemented changes, files modified, and test results to the user. This can go into an output "{plan_name}-CHANGES.md"
 3. Provide README's for guidance on using the generated output
    - READMEs should include:
       - any dependencies needed
@@ -62,5 +62,5 @@ Execute the plan strictly in the order defined in **Section 2 & 3** of the plan 
 4. Ensure a minimum (80%) level of code coverage of the entire coverable project if applicable
    - code coverage should only consider code files (no configuration files, deployment scripts, etc.)
    - If we are under this threshold, determine where there are gaps to reach 80% but do not think hard about how to rectify them
-      - Output all the files where we are lacking coverage and the current coverage for those files into a file named "{plan_name}_testing_gaps.md"
+      - Output all the files where we are lacking coverage and the current coverage for those files into a file named "{plan_name}-TESTING-GAPS.md"
         

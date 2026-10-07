@@ -6,61 +6,44 @@ description: Ingests a markdown file listing current gaps in code coverage of th
 # Execute Technical Plan
 
 ## Critical Directive
-You are tasked with executing a pre-written technical plan markdown file (located in the `plan/` directory or provided as an argument). Your goal is to implement the plan precisely, step-by-step, adhering strictly to the defined logical chunks and test barriers. 
-
-Even if you have lower context or knowledge than an expert architect, you can successfully implement this plan by following every instruction methodically in exact order. Do not skip steps, do not guess beyond the plan's instructions, and do not proceed past a test barrier until all tests pass.
+You are tasked with figuring out how to obtain additional coverage of the code in this project. We require at least 80% code coverage of our project. 
+You are given:
+- a markdown file with the name {problem}-TESTING-GAPS.md : pieces of code which are lacking in coverage
+- a markdown file with the name {problem}-PLAN.md : the initial plan that gives context on the execution
+- a markdown file with the name {problem}-CHANGES.md: the specific changes which were done to execute on the *-PLAN.md.
 
 ## Use This Skill When
-- A plan file (`*-PLAN.md`) has been created (e.g. via the `plan` skill) and is ready for implementation.
-- You need to execute complex changes in a structured, verifiable, chunk-by-chunk manner.
+- A plan file (`*-PLAN.md`) has been created (e.g. via the `plan` skill).
+- A changes file (`*-CHANGES.md`) has been created (i.e via the `execute` skill).
+- A testing gap file (`*-TESTING-GAPS.md`) has been created (i.e via the `execute` skill)
+- and the project-level code coverage is below 80% as a whole and we need to reach 80% coverage.
 
 ## Execution Process
 
-### Step 1: Plan Discovery & Ingestion
-1. Locate and read the target plan file (e.g., inside `plan/` directory or specified via `/skill:execute path/to/plan.md`). If multiple plan files exist, list them and ask the user which one to execute, or pick the most recent one if unambiguous.
-2. Read the entire plan document thoroughly to build mental context of:
-   - Intent & Scope (In Scope / Out of Scope)
-   - The ordered list of Logical Chunks and Test Barriers
-   - Detailed step-by-step file modifications
-   - Test suites, test cases, and acceptance criteria
-3. Review Section 4 (Review / Risks) for architectural warnings, package naming conventions, or configuration constraints.
+### Step 1: Review Test Cases From Plan
+1. Review the PLAN.md file for the context on the implementation.
+2. Based on the PLAN.md context think about test case scenarios that would cover the PLAN.md file acceptance criteria for completion of the plan without referencing the CHANGES.md file
 
-### Step 2: Sequential Execution Protocol
-Execute the plan strictly in the order defined in **Section 2 & 3** of the plan file. For each item in the execution sequence:
+### Step 2: Cross Referencing Thoughts with the Actual Execution
+1. Cross reference your test case scenarios against the actual scenarios made in CHANGES.md and see if any scenarios are missing
+2. If any scenarios are missing, it is paramount to inform the user and ask them to implement the scenario with rationale on why the scenario is required before implementation
 
-#### If the item is a Logical Chunk:
-1. **Understand Context:** Read the brief context and planned modifications for this logical chunk.
-2. **Ensure Directory Structure:** 
-   - Before writing or modifying any file, ensure its parent directories exist (e.g. using `mkdir -p` or creating directories via tool calls).
-3. **Implement Step-by-Step:**
-   - For each file specified in the chunk, locate or create the file and apply the exact steps described.
-   - Use precise edits (`edit` tool) or complete file creation (`write` tool for new files).
-   - Ensure syntax correctness, type safety, package/module import consistency, and alignment with surrounding code. This may involve running linters or building code.
-   - Ensure code is properly documented (code comments or readme.md files if code comments are not applicable)
-   - Prefer maintainable code over overly-optimized code (someone completely new should be able to understand the code. no sphaghetti code.)
-4. **Self-Check:** Review your changes against the step-by-step instructions before moving on.
+### Step 3: Final Gaps
+1. Compute the project-level code coverage again only if you had to add extra scenarios and we can jump to the next step (step 4) if the project-level code coverage is 80% or higher
+2. Inspect the *-TESTING-GAPS.md file and determine which lines code lines in the files mentioned are not covered
+3. Implement test cases to cover the code lines which are not covered.
+   - It is not too important to try and cover every little thing
+   - It is advised to focus on the easier, discrete things that are not covered first instead of trying to cover individual lines
+      - i.e if a method is not covered, a getter/setter is not covered, or a logical branch (if statement clause) is not covered, write tests for those to get easy coverage first
+   - **CRITICAL** Code changes to the source file that is being tested at this point are extremely discouraged to get increased code coverage. If they are absolutely necessary, prompt the user first and inform them why changes to the source might be needed
+   - **IMPORTANT** new test cases added should have documentation (i.e code comments of the scenario that is being tested)
+4. Test periodically as you make more test cases and get project-level code coverage. If at any point we reach 80% or more coverage, we can jump to the next step (step 4)
+5. If you think it is impossible to try and get 80% code coverage for the project, review the PLAN.md and CHANGES.md file one more time before making that final decision to stop. Inform the user with context as to why this is impossible and move onto the next step.
 
-#### If the item is a Test Barrier:
-1. **Review Test Overview & Acceptance Criteria:** Understand what scenarios and assertions must pass.
-2. **Execute Testing Plan:**
-   - Set up or implement the test cases, test suites, or verification scripts outlined.
-   - Run the relevant tests using available test execution tools (e.g., `bash` tool with `mvn test`, `npm test`, `pytest`, etc.).
-3. **Verify Assertions:**
-   - Ensure all assertions and acceptance criteria pass successfully.
-   - **CRITICAL:** If any test fails or assertion does not pass, STOP. Diagnose the root cause, fix the implementation or test, and re-run until 100% of test barrier criteria pass.
-   - Do NOT proceed to the next logical chunk until the current test barrier is fully cleared.
-   - If the test barrier cannot be overcome provide a detailed error to the user and the context of the component being tested along with the testing environment with the goal that the user can adjust the execution plan or test case for you to overcome the barrier. 
+### Step 4: Final Output
+1. Provide a short summary on what was changed
+2. Provide the before and after project-level coverage
+3. If there were any shortcomings during the execution of this skill, document that to the user
+4. Output the final report to a {problem}-TESTING-GAP-EXECUTION.md
 
-### Step 3: Final Verification & Completion
-1. Run the full test suite or all test barriers to ensure no regressions.
-2. Provide a concise summary of implemented changes, files modified, and test results to the user.
-3. Provide README's for guidance on using the generated output
-   - READMEs should include:
-      - any dependencies needed
-      - commands to run for setup and usage of the system
-      - behavior of the system
-4. Ensure a minimum (80%) level of code coverage of the entire coverable project if applicable
-   - code coverage should only consider code files (no configuration files, deployment scripts, etc.)
-   - If we are under this threshold, determine where there are gaps to reach 80% but do not think hard about how to rectify them
-      - Output all the files where we are lacking coverage and the current coverage for those files into a file named "{plan_name}_testing_gaps.md"
         
