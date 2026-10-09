@@ -5,6 +5,8 @@ services:
     volumes:
       - ./proxy/squid.conf:/etc/squid/squid.conf:ro
       - ./proxy/allowlist.txt:/etc/squid/allowlist.txt:ro
+      - squid-cache:/var/spool/squid
+      - squid-logs:/var/log/squid
     cap_add:
       - NET_RAW
     ports:
@@ -18,7 +20,7 @@ services:
     container_name: pi-agent
     pull_policy: newer
     volumes:
-      - pi-volume:/root/.pi/agent/
+      - pi-volume:/home/node/.pi/agent/
 ${DYNAMIC_VOLUMES}
     environment:
       - http_proxy=http://pi-proxy:3128
@@ -39,3 +41,5 @@ networks:
 
 volumes:
   pi-volume:
+  squid-cache:
+  squid-logs:

@@ -10,7 +10,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 mkdir -p ~/.local/share/pi-sandbox 
 mkdir -p ~/.local/bin
 
-cp -r "$SCRIPT_DIR/bin" "$SCRIPT_DIR/credentials" "$SCRIPT_DIR/extensions" "$SCRIPT_DIR/proxy" "$SCRIPT_DIR/scripts" "$SCRIPT_DIR/skills" "$SCRIPT_DIR/podman-compose.template.yml" ~/.local/share/pi-sandbox
+cp -r "$SCRIPT_DIR/system" "$SCRIPT_DIR/bin" "$SCRIPT_DIR/credentials" "$SCRIPT_DIR/extensions" "$SCRIPT_DIR/proxy" "$SCRIPT_DIR/scripts" "$SCRIPT_DIR/skills" "$SCRIPT_DIR/podman-compose.template.yml" ~/.local/share/pi-sandbox
 
 # create symlinks for the scripts to expose
 chmod +x ~/.local/share/pi-sandbox/bin/pi-start.sh

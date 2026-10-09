@@ -20,6 +20,11 @@ VOL_LINES="      - $SCRIPT_DIR/../extensions/pi-permission-system/pi-permissions
 # mount the skill files, so if pi wants to customize them, we can commit them back
 VOL_LINES="${VOL_LINES}      - $SCRIPT_DIR/../skills:/home/node/.pi/agent/skills:Z
 "
+
+# mount the append_system.md file , should be readonly since its a system rule
+VOL_LINES="${VOL_LINES}      - $SCRIPT_DIR/../system/APPEND_SYSTEM.md:/home/node/.pi/agent/APPEND_SYSTEM.md:ro
+"
+
 for path in "$@"; do
     # Ensure absolute path
     abs_path=$(realpath "$path")
@@ -38,7 +43,7 @@ podman compose -f "$COMPOSE_FILE" up -d
 
 # trap the kill operation so the stack 
 # is immediately torn down on disconnect
-trap "podman compose -f $COMPOSE_FILE stop; podman compose -f $COMPOSE_FILE down -v; echo 'cleaned up pi-sandbox'" EXIT INT TERM
+trap "podman compose -f $COMPOSE_FILE stop; podman compose -f $COMPOSE_FILE down; echo 'cleaned up pi-sandbox'" EXIT INT TERM
 
 echo "Container is running. Attaching to pi-agent..."
 podman attach pi-agent
