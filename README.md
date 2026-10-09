@@ -40,9 +40,14 @@ Since credentials.env is set to be ignored by git, on clone, modify the credenti
 
 ## installation
 Run `install.sh` which copies necessary folders to the user install location ~/.local/share/pi-sandbox.
-The install will also symlink the commands `pi-start` -> `./bin/pi-start.sh` and `pi-uninstall` -> `./bin/pi-uninstall.sh`.
-
-calling `pi-uninstall` will cleanup the installation folder and symlinks
+The install will also symlink the commands 
+- `pi-start` -> `./bin/pi-start.sh` 
+    - this starts the compose stack and automatically attaches to the pi container
+    - when the user exits the container, the stack is torn down
+- `pi-uninstall` -> `./bin/pi-uninstall.sh`
+    - this removes symlinks to the commands and destroys the install location
+- `pi-add-domain` -> `./bin/pi-add-domain.sh`
+    - this dynamically changes the allowlist for the squid forward proxy and reloads squid to pi can access more domains seamlessly
 
 ## pi-start Usage
 this script provides options to build and run the pi harness stack I have defined. After the podman-compose operation completes, the process automatically attaches to the pi-sandbox and you can interact with the pi agent CLI.
@@ -56,5 +61,9 @@ i.e ```pi-start "PATH/TO/Dir1" "PATH/TO/DIR2" ...```
 
 These directories are **NOT** mounted as read-only, so the agent can modify them. Ensure that pi-permission-system configuration is provided in the specific directories that you mount so that the pi-agent obeys permissions you might require. See [extensions/pi-permission-system/README.md](./extensions/pi-permission-system/README.md).
 
-## kill-compose.sh
-This will tear down the pi harness stack based on the compose file **podman-compose.generate.yml**, which is the output of the run-compose.sh script.
+## pi-add-domain Usage
+
+```pi-add-domain ".google.com" ".quarkus.io" ... ``` 
+
+Input a list of strings of domains to add to the allowlist. 
+These will be added and the forward proxy will be dynamically reloaded so that pi will immediately be able to access those domains. 
