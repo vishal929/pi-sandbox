@@ -15,7 +15,10 @@ cp -r "$SCRIPT_DIR/bin" "$SCRIPT_DIR/credentials" "$SCRIPT_DIR/extensions" "$SCR
 # create symlinks for the scripts to expose
 chmod +x ~/.local/share/pi-sandbox/bin/pi-start.sh
 chmod +x ~/.local/share/pi-sandbox/bin/pi-uninstall.sh
+chmod +x ~/.local/share/pi-sandbox/bin/pi-add-domain.sh
 ln -sf ~/.local/share/pi-sandbox/bin/pi-start.sh ~/.local/bin/pi-start
 ln -sf ~/.local/share/pi-sandbox/bin/pi-uninstall.sh ~/.local/bin/pi-uninstall
+ln -sf ~/.local/share/pi-sandbox/bin/pi-add-domain.sh ~/.local/bin/pi-add-domain
 
-echo "Successfully copied over pi-sandbox. Ensure you have podman/docker + podman-compose/docker-compose installed. Invoke the tool with pi-start and kill the stack with pi-stop"
+echo "Successfully copied over pi-sandbox. Ensure you have podman/docker + podman-compose/docker-compose installed. Invoke the tool with pi-start and kill the stack with pi-stop." 
+echo "If you need to add additional domains to the allowlist, use the pi-add-domain command"

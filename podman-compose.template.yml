@@ -1,5 +1,5 @@
 services:
-  proxy:
+  pi-proxy:
     image: docker.io/ubuntu/squid:latest
     container_name: pi-proxy
     volumes:
@@ -21,11 +21,11 @@ services:
       - pi-volume:/root/.pi/agent/
 ${DYNAMIC_VOLUMES}
     environment:
-      - http_proxy=http://proxy:3128
-      - https_proxy=http://proxy:3128
+      - http_proxy=http://pi-proxy:3128
+      - https_proxy=http://pi-proxy:3128
       - no_proxy=localhost,127.0.0.1
     depends_on:
-      - proxy
+      - pi-proxy
     stdin_open: true
     tty: true
     networks:
