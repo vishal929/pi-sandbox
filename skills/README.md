@@ -21,3 +21,7 @@ During the execute step, if project-level code coverage is not 80% or higher, we
 
 The testing-gaps will review the plan, execution summary, and testing gaps markdown file to see where test coverage can be improved. 
 
+## Websearch
+
+Skill to use ketch cli to search on the web. Skill content taken from reddit user mikkelkp
+

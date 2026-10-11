@@ -11,11 +11,12 @@ The agent only has access to modify the volumes which are mounted by the user in
 In addition, for the pi-permission-system extension, the configuration is mounted as read-only, so the container process cannot modify it, even as root. 
 
 ## Network Access
-We use an application-level guard and an http proxy to prevent unwanted network requests made by the pi harness. 
-
-The pi-permission-system will be setup to inspect outgoing requests to make sure they are following the https standard and are not fishy. 
-
 The squid forward http proxy will forward all requests from the pi agent after checking against the allowlist specified in the squid configuration. See [proxy/README.md](./proxy/README.md) 
+
+The agent will know to inform the user when a domain it tried to access is rejected based on the allowlist (see system/APPEND_SYSTEM.md). The agent will prompt the user to run `pi-add-domain [Domain1] [Domain2] ...` in order to whitelist the domains.
+
+## Internet Tool
+We use the [ketch-cli](https://github.com/1broseidon/ketch) for internet exploration for use by the agent and is installed via npm in the dockerfile. A skill is written called `websearch` which leverages the ketch-cli.
 
 ## Dockerfile setup
 We rely on the debian trixy slim node image as a base and install other dependencies the agent might need.

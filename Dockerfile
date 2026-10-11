@@ -29,6 +29,9 @@ RUN npm install -g --ignore-scripts "@earendil-works/pi-coding-agent@${PI_VERSIO
 RUN export PATH="/home/node/.pi/agent/bin:$PATH"
 ENV PATH="/home/node/.pi/agent/bin:${PATH}"
 
+# install the ketch cli for websearching
+RUN npm install -g --ignore-scripts ketch-cli
+
 # install the pi permissions system extension
 RUN npm config set allow-scripts=pi-permission-system --location=user
 RUN pi install npm:pi-permission-system --approve
