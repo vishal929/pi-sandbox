@@ -10,6 +10,12 @@ You are tasked with executing a pre-written technical plan markdown file (locate
 
 Even if you have lower context or knowledge than an expert architect, you can successfully implement this plan by following every instruction methodically in exact order. Do not skip steps, do not guess beyond the plan's instructions, and do not proceed past a test barrier until all tests pass.
 
+## Subagent Routing (if `subagent` tool is available)
+1. Check plan §2 for absolutely independent groups / chunks with disjoint file sets. If none, run sequentially yourself (default path below).
+2. If independent: `subagent({tasks: [{agent:"implementer", task:"Execute Logical: <name> from <plan-file>:\n<exact chunk + barrier text>. Do not expand scope."}, ...]})`. Pass only that chunk + its barrier, not the whole plan. Use `/subagent-model implementer <mid-cost code model>` (plan is laid out, cheap is fine).
+3. Implementer is `ask: edit/write` — first approval: choose `Allow Always` for matching patterns to run the rest hands-free. On `Chain stopped...` / `permission_timeout` / auth-remediation text, STOP, surface the denial to the user, do not retry silently or work around it.
+4. You own Test Barriers, full-suite verification (Step 3.1), `*-CHANGES.md`, READMEs, and coverage-gap file. Never let workers declare final victory. Do not parallelize chunks touching the same files (no cross-process file-mutation queue — edits race).
+
 ## Use This Skill When
 - A plan file (`*-PLAN.md`) has been created (e.g. via the `plan` skill) and is ready for implementation.
 - You need to execute complex changes in a structured, verifiable, chunk-by-chunk manner.

@@ -12,6 +12,12 @@ You are given:
 - a markdown file with the name {problem}-PLAN.md : the initial plan that gives context on the execution
 - a markdown file with the name {problem}-CHANGES.md: the specific changes which were done to execute on the *-PLAN.md.
 
+## Subagent Routing (if `subagent` tool is available)
+- Steps 1-2 (review PLAN, cross-ref CHANGES, user questions about missing scenarios) stay in the parent. Never delegate user prompts or global judgment.
+- Step 3 (write tests per uncovered file/method/branch) fans out: `subagent({tasks: [{agent:"implementer", task:"Cover <file> lines <x-y> per *-TESTING-GAPS.md. Test-only, no src edits without approval. Document each case."}, ...]})` — one task per file or discrete method. Prefer easy discrete wins first (uncovered method/getter/branch).
+- `CRITICAL: test-only` in task text. Implementer permission already discourages src edits; if a src change looks necessary, stop that task and prompt the user with rationale (do not work around).
+- You own coverage recomputation (Step 3.4), the 80% gate, and the final `{problem}-TESTING-GAP-EXECUTION.md` report. Workers return before/after snippets only.
+
 ## Use This Skill When
 - A plan file (`*-PLAN.md`) has been created (e.g. via the `plan` skill).
 - A changes file (`*-CHANGES.md`) has been created (i.e via the `execute` skill).

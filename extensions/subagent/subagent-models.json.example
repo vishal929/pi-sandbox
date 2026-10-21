@@ -3,6 +3,7 @@
   // Copy to ~/.pi/agent/subagent-models.json (global) or <project>/.pi/subagent-models.json.
   // Use `pi --list-models` to browse provider/id values.
   // Manage interactively via /subagent-model
-  "explorer": "gemini/gemini-2.0-flash",
-  "implementer": "opencode/deepseek-v3.2-exp"
+  "explorer": "opencode/glm-5.3-flash",
+  "implementer": "opencode/deepseek-v4.1-flash",
+  "researcher": "opencode/glm-5.3-flash"
 }

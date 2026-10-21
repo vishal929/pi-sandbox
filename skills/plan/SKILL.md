@@ -9,6 +9,14 @@ description: Forces the agent to understand the problem, ask clarifying question
 DO NOT write, modify, or update any functional application source files while using this skill. Your sole purpose is to analyze the request and generate an execution plan. 
 DO NOT make any assumptions. For any unknowns, list possible assumptions to make, and then prompt the user to proceed with an assumption or provide one. 
 
+## Subagent Routing (if `subagent` tool is available)
+- DO NOT read the whole tree yourself. Fan out context gathering to cheap read-only agents:
+  `subagent({tasks: [{agent:"explorer", task:"Find all code relevant to <area A>..."}, {agent:"explorer", task:"Find all code relevant to <area B>..."}]})`
+  Use `/subagent-model explorer gemini/gemini-2.0-flash` (or cheapest configured). Explorer is `deny: write/edit/bash` so it cannot violate this directive even if prompted.
+- For external docs/APIs, fan out to `researcher` the same way (one query per task). Pre-approve domains first (`pi-add-domain`) to avoid forwarded 403 spam.
+- You own partitioning into Logical chunks, test barriers, Review §4, and all user clarifying questions. Never delegate user prompts, final synthesis, or plan-file writing.
+- Synthesize explorer/researcher returns (`Files Retrieved + Key Code + Architecture`) into the plan template below. If scope splits into absolutely independent groups, emit separate `*-PLAN.md` files per group (see Step 1.5).
+
 ## Use This Skill When
 - The user requests a new feature, a code refactor, or an architectural change.
 - A task is too complex for immediate execution and requires a phased roadmap.
