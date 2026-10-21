@@ -26,7 +26,7 @@ import {
 	getMarkdownTheme,
 	withFileMutationQueue,
 } from "@earendil-works/pi-coding-agent";
-import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
+import { Container, Markdown, Spacer, Text, fuzzyFilter, type AutocompleteItem } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
 import { decorateIfAuthError, formatAuthRemediation } from "./auth-errors.ts";
@@ -535,6 +535,13 @@ const SubagentParams = Type.Object({
 });
 
 export default function (pi: ExtensionAPI) {
+	// Cached session context for getArgumentCompletions (which receives no ctx).
+	// Same model source as built-in /model: scopedModels when set, else registry.getAvailable().
+	let cached: { cwd: string; modelRegistry?: any; scopedModels?: readonly any[] } | undefined;
+	pi.on("session_start", async (_event, ctx) => {
+		cached = { cwd: ctx.cwd, modelRegistry: (ctx as any).modelRegistry, scopedModels: ctx.scopedModels as any };
+	});
+
 	pi.registerTool({
 		name: "subagent",
 		label: "Subagent",
@@ -1109,7 +1116,59 @@ export default function (pi: ExtensionAPI) {
 
 	pi.registerCommand("subagent-model", {
 		description: "Set/show model per subagent (overrides agent.md). Usage: /subagent-model [agent] [provider/id]",
+		// Auto-suggest like built-in /model: arg1 = agent name, arg2 = provider/id.
+		// prefix is everything after "/subagent-model ", so the model item value must
+		// include the agent prefix ("<agent> <provider/id>") to avoid clobbering arg1.
+		getArgumentCompletions: async (argumentPrefix: string): Promise<AutocompleteItem[] | null> => {
+			const cwd = cached?.cwd ?? process.cwd();
+			const spaceIdx = argumentPrefix.search(/\s/);
+
+			// --- arg 1: agent name ---
+			if (spaceIdx === -1) {
+				let names: { name: string; model?: string }[] = [];
+				try {
+					names = discoverAgents(cwd, "user").agents;
+				} catch {
+					return null;
+				}
+				const items: AutocompleteItem[] = names.map((a) => ({
+					value: a.name,
+					label: a.name,
+					description: a.model ? `${a.model}` : undefined,
+				}));
+				if (!argumentPrefix) return items.slice(0, 50);
+				const hit = fuzzyFilter(items, argumentPrefix, (i) => i.value);
+				return hit.length > 0 ? hit : null;
+			}
+
+			// --- arg 2: model (same source + search text as /model) ---
+			const agentPart = argumentPrefix.slice(0, spaceIdx);
+			const modelQuery = argumentPrefix.slice(spaceIdx + 1).trimStart();
+			if (!agentPart) return null;
+			const registry = cached?.modelRegistry;
+			if (!registry || typeof registry.getAvailable !== "function") return null;
+			let models: { provider: string; id: string; name?: string }[] = [];
+			try {
+				models =
+					cached?.scopedModels && cached.scopedModels.length > 0
+						? (cached.scopedModels as any[]).map((s: any) => s.model ?? s)
+						: registry.getAvailable();
+			} catch {
+				return null;
+			}
+			if (!models.length) return null;
+			const searchText = (m: { provider: string; id: string; name?: string }) =>
+				`${m.id} ${m.provider} ${m.provider}/${m.id} ${m.name ?? ""}`;
+			const list = modelQuery ? fuzzyFilter(models, modelQuery, searchText) : models.slice(0, 50);
+			if (!list.length) return null;
+			return list.map((m) => ({
+				value: `${agentPart} ${m.provider}/${m.id}`,
+				label: `${m.provider}/${m.id}`,
+				description: m.name ?? m.provider,
+			}));
+		},
 		handler: async (args, ctx) => {
+			cached = { cwd: ctx.cwd, modelRegistry: (ctx as any).modelRegistry, scopedModels: ctx.scopedModels as any };
 			const { map, globalPath } = loadSubagentModelMap(ctx.cwd);
 			const discovery = discoverAgents(ctx.cwd, "user");
 			const names = discovery.agents.map((a) => a.name);
