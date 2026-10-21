@@ -1,0 +1,26 @@
+{
+  "defaultPolicy": { "tools": "ask", "bash": "ask", "mcp": "ask", "skills": "ask", "special": "ask" },
+  "tools": {
+    "*": "ask",
+    "read": "allow",
+    "head": "allow",
+    "cat": "allow",
+    "tail": "allow",
+    "grep": "allow",
+    "find": "allow",
+    "ls": "allow",
+    "write": "ask",
+    "edit": "ask",
+    
+    // deny reads of secret files anywhere in the mount
+    "read:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    
+    // also block discovery tools from those paths
+    "grep:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    "find:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    "cat:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    "head:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    "tail:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+    "ls:/home/workspace/pi-sandbox/credentials/credentials.env": "deny",
+  }
+}

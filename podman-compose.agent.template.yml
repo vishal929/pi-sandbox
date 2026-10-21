@@ -1,0 +1,25 @@
+services:
+  pi-agent:
+    image: ghcr.io/vishal929/pi-sandbox:latest
+    container_name: pi-agent-${INSTANCE}
+    pull_policy: newer
+    volumes:
+      - pi-volume-${INSTANCE}:/home/node/.pi/agent/
+${DYNAMIC_VOLUMES}
+    environment:
+      - http_proxy=http://pi-proxy:3128
+      - https_proxy=http://pi-proxy:3128
+      - no_proxy=localhost,127.0.0.1
+    stdin_open: true
+    tty: true
+    networks:
+      - pi-shared-net
+    env_file:
+      - ./credentials/credentials.env
+
+networks:
+  pi-shared-net:
+    external: true
+
+volumes:
+  pi-volume-${INSTANCE}:

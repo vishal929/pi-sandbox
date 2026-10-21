@@ -42,29 +42,58 @@ Since credentials.env is set to be ignored by git, on clone, modify the credenti
 ## installation
 Run `install.sh` which copies necessary folders to the user install location ~/.local/share/pi-sandbox.
 The install will also symlink the commands 
-- `pi-start` -> `./bin/pi-start.sh` 
-    - this starts the compose stack and automatically attaches to the pi container
-    - when the user exits the container, the stack is torn down
+- `pi-start` -> `./bin/pi-start.sh`
+    - this starts a new `pi-agent` instance and automatically attaches to it
+    - each invocation gets a unique instance (`pi-agent-<id>`) with its own mounts and state volume, so you can run multiple instances at once
+    - the shared `pi-proxy` starts automatically with the first agent and stops automatically when the last agent exits
+    - when the session ends, that agent instance is auto-cleaned (`down -v` + generated compose file removed); the proxy is kept only while other agents are still running
 - `pi-uninstall` -> `./bin/pi-uninstall.sh`
-    - this removes symlinks to the commands and destroys the install location
+    - this stops all running `pi-agent` instances and the shared `pi-proxy`, removes per-instance/state volumes and the shared network, then removes symlinks and destroys the install location (this is the only thing that clears the saved allowlist)
 - `pi-add-domain` -> `./bin/pi-add-domain.sh`
-    - this dynamically changes the allowlist for the squid forward proxy and reloads squid to pi can access more domains seamlessly
+    - this appends to the allowlist and reloads squid so pi can access more domains seamlessly
+    - saved to `proxy/allowlist.txt` (bind-mounted into the proxy), so it persists across proxy restarts; if the proxy isn't running it is saved and applied on the next `pi-start`
+- `pi-list` -> `./bin/pi-list.sh`
+    - lists saved (named/persistent) sessions with `running`/`stopped` status and their mounts
 
 ## pi-start Usage
-this script provides options to build and run the pi harness stack I have defined. After the podman-compose operation completes, the process automatically attaches to the pi-sandbox and you can interact with the pi agent CLI.
+Run one `pi-agent` per terminal. After the compose operation completes, the process automatically attaches to that agent and you can interact with the pi agent CLI.
 
-This uses the podman-compose.template.yml to generate a podman-compose.generated.yml that will hold the final definition to be deployed.
+This uses `podman-compose.agent.template.yml` to generate a per-instance `podman-compose.<id>.generated.yml`, plus a singleton `podman-compose.proxy.yml` for the shared `pi-proxy` (both talk over the shared `pi-shared-net`, agents reach the proxy at `http://pi-proxy:3128`).
 
 ### arguments
-Host directory locations can be passed as argument to be mounted in the pi-agent container under the /home/workspace location. 
+Host directory locations can be passed as argument to be mounted in the pi-agent container under the /home/workspace location.
 
-i.e ```pi-start "PATH/TO/Dir1" "PATH/TO/DIR2" ...```
+i.e ```pi-start [--name "SESSION"] "PATH/TO/Dir1" "PATH/TO/DIR2" ...```
+
+`--name` (short: `-n`) is optional. Without it the instance is ephemeral. With it the instance is a named persistent session.
 
 These directories are **NOT** mounted as read-only, so the agent can modify them. Ensure that pi-permission-system configuration is provided in the specific directories that you mount so that the pi-agent obeys permissions you might require. See [extensions/pi-permission-system/README.md](./extensions/pi-permission-system/README.md).
 
+### concurrent instances
+```bash
+# terminal 1
+pi-start ./app1
+# terminal 2
+pi-start ./app2
+```
+Each gets its own container (`pi-agent-<id>`), compose project (`pi-<id>`), and state volume (`pi-volume-<id>`). Exiting a session cleans up only that instance. The shared `pi-proxy` stays up while any agent is running and spins down when the last one stops.
+
+### named instances (persistent sessions)
+Use the optional `--name` flag:
+
+```bash
+pi-start --name myproject ./app1 ./app2   # create (or update mounts for) session "myproject"
+pi-start --name myproject                 # restart saved session "myproject" (reuses mounts + state volume)
+pi-list                                   # list saved sessions with running/stopped status
+```
+
+* Named sessions persist on exit (`stop`, not `down -v`): the compose file, `sessions/<name>/mounts.txt`, and `pi-volume-<name>` are kept, so restarting with `pi-start --name "<name>"` restores mounts and agent state.
+* Without `--name` (`pi-start ./app1`) the instance is ephemeral: fully cleaned (`down -v`) on exit and never shown in `pi-list` after it stops.
+* Updating mounts: `pi-start --name myproject ./newdir` overwrites the saved mounts and regenerates the compose file.
+
 ## pi-add-domain Usage
 
-```pi-add-domain ".google.com" ".quarkus.io" ... ``` 
+```pi-add-domain ".google.com" ".quarkus.io" ... ```
 
-Input a list of strings of domains to add to the allowlist. 
-These will be added and the forward proxy will be dynamically reloaded so that pi will immediately be able to access those domains. 
+Input a list of strings of domains to add to the allowlist.
+These will be added and the forward proxy will be dynamically reloaded so that pi will immediately be able to access those domains. If the proxy isn't running, domains are still saved to `proxy/allowlist.txt` and applied on the next `pi-start`. Saved domains persist until `pi-uninstall`.

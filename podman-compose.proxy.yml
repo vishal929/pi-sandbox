@@ -1,0 +1,23 @@
+services:
+  pi-proxy:
+    image: docker.io/ubuntu/squid:latest
+    container_name: pi-proxy
+    volumes:
+      - ./proxy/squid.conf:/etc/squid/squid.conf:ro
+      - ./proxy/allowlist.txt:/etc/squid/allowlist.txt:ro
+      - squid-cache:/var/spool/squid
+      - squid-logs:/var/log/squid
+    cap_add:
+      - NET_RAW
+    ports:
+      - "3128:3128"
+    networks:
+      - pi-shared-net
+
+networks:
+  pi-shared-net:
+    external: true
+
+volumes:
+  squid-cache:
+  squid-logs:
