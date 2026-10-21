@@ -1119,12 +1119,17 @@ export default function (pi: ExtensionAPI) {
 		// Auto-suggest like built-in /model: arg1 = agent name, arg2 = provider/id.
 		// prefix is everything after "/subagent-model ", so the model item value must
 		// include the agent prefix ("<agent> <provider/id>") to avoid clobbering arg1.
+		// First-arg values include a trailing space (same pattern as built-in /mcp)
+		// so picking an agent immediately moves completion into model stage.
 		getArgumentCompletions: async (argumentPrefix: string): Promise<AutocompleteItem[] | null> => {
 			const cwd = cached?.cwd ?? process.cwd();
-			const spaceIdx = argumentPrefix.search(/\s/);
+			// Same tokenizing as /mcp: "action server" split. Here: "agent model".
+			const [agentToken, modelToken, ...rest] = argumentPrefix.trimStart().split(/\s+/);
+			if (rest.length > 0) return null;
 
-			// --- arg 1: agent name ---
-			if (spaceIdx === -1) {
+			// --- arg 1: agent name (no model token yet) ---
+			if (modelToken === undefined) {
+				const query = agentToken ?? "";
 				let names: { name: string; model?: string }[] = [];
 				try {
 					names = discoverAgents(cwd, "user").agents;
@@ -1132,27 +1137,43 @@ export default function (pi: ExtensionAPI) {
 					return null;
 				}
 				const items: AutocompleteItem[] = names.map((a) => ({
-					value: a.name,
+					value: `${a.name} `,
 					label: a.name,
 					description: a.model ? `${a.model}` : undefined,
 				}));
-				if (!argumentPrefix) return items.slice(0, 50);
-				const hit = fuzzyFilter(items, argumentPrefix, (i) => i.value);
+				if (!query) return items.slice(0, 50);
+				const hit = fuzzyFilter(items, query, (i) => i.label);
 				return hit.length > 0 ? hit : null;
 			}
 
 			// --- arg 2: model (same source + search text as /model) ---
-			const agentPart = argumentPrefix.slice(0, spaceIdx);
-			const modelQuery = argumentPrefix.slice(spaceIdx + 1).trimStart();
+			const agentPart = agentToken;
+			const modelQuery = modelToken ?? "";
 			if (!agentPart) return null;
-			const registry = cached?.modelRegistry;
-			if (!registry || typeof registry.getAvailable !== "function") return null;
+			const registry: any = cached?.modelRegistry;
+			const getModels = (): { provider: string; id: string; name?: string }[] => {
+				if (cached?.scopedModels && cached.scopedModels.length > 0)
+					return (cached.scopedModels as any[]).map((s: any) => s.model ?? s);
+				if (registry) {
+					if (typeof registry.getAvailable === "function") {
+						const avail = registry.getAvailable();
+						if (avail?.length) return avail;
+					}
+					if (typeof registry.getAvailableSnapshot === "function") {
+						const snap = registry.getAvailableSnapshot();
+						if (snap?.length) return snap;
+					}
+					// Fallback: show catalog even when nothing has auth yet (pi --list-models parity).
+					if (typeof registry.getAll === "function") {
+						const all = registry.getAll();
+						if (all?.length) return all;
+					}
+				}
+				return [];
+			};
 			let models: { provider: string; id: string; name?: string }[] = [];
 			try {
-				models =
-					cached?.scopedModels && cached.scopedModels.length > 0
-						? (cached.scopedModels as any[]).map((s: any) => s.model ?? s)
-						: registry.getAvailable();
+				models = getModels();
 			} catch {
 				return null;
 			}
