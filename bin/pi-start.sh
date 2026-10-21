@@ -89,6 +89,10 @@ VOL_LINES="${VOL_LINES}      - $ROOT_DIR/skills:/home/node/.pi/agent/skills:Z
 "
 VOL_LINES="${VOL_LINES}      - $ROOT_DIR/system/APPEND_SYSTEM.md:/home/node/.pi/agent/APPEND_SYSTEM.md:ro
 "
+VOL_LINES="${VOL_LINES}      - $ROOT_DIR/extensions/subagent:/home/node/.pi/agent/extensions/subagent:ro
+"
+VOL_LINES="${VOL_LINES}      - $ROOT_DIR/extensions/subagent/agents:/home/node/.pi/agent/agents:ro
+"
 
 for path in "${DIRS[@]}"; do
     abs_path=$(realpath "$path")
