@@ -1200,28 +1200,29 @@ export default function (pi: ExtensionAPI) {
 					const eff = resolveSubagentModel({ mapping: map, agentName: n, agentMdModel: md?.model });
 					return `- ${n}: ${map[n] ? `${map[n]} (override)` : `${eff ?? "(parent default)"}`}`;
 				});
-				ctx.ui.notify(`Subagent models (${globalPath}):\n${lines.join("\n") || "(no agents)"}`, "info");
+				// No modal prompts here by design: pi's editor submits on Enter for
+				// command-name completions, so popping ui.select/ui.input on missing
+				// args turns every Enter into a dialog. Keep this notify-only and let
+				// Tab/Enter on the argument autocomplete picker fill in args inline.
+				ctx.ui.notify(`Subagent models (${globalPath}):\n${lines.join("\n") || "(no agents)"}\n\nUsage: /subagent-model <agent> <provider/id> — type a space after the agent and pick from autocomplete.`, "info");
 			};
-			let agentName = parts[0];
-			let modelStr = parts[1];
+			const agentName = parts[0];
+			const modelStr = parts[1];
 			if (!agentName) {
-				if (!ctx.hasUI) { show(); return; }
-				const picked = await ctx.ui.select("Which subagent?", names);
-				if (!picked) return;
-				agentName = picked;
+				show(); return;
 			}
 			if (!names.includes(agentName)) {
 				ctx.ui.notify(`Unknown agent "${agentName}". Available: ${names.join(", ")}`, "warning");
 				return;
 			}
 			if (!modelStr) {
-				if (!ctx.hasUI) { show(); return; }
-				// Free-form input keeps us independent of modelRegistry list APIs.
-				// Validate after input via find()/hasConfiguredAuth().
+				// Notify-only (no ui.input modal): Enter with a partial command
+				// submits it, so prompting here hijacks the Enter key. The model
+				// picker is the arg-2 autocomplete — Tab/arrow+Enter completes it
+				// inline, exactly like arg-1.
 				const cur = resolveSubagentModel({ mapping: map, agentName, agentMdModel: discovery.agents.find((a) => a.name === agentName)?.model });
-				const input = await ctx.ui.input(`Model for ${agentName}? (provider/id)`, { initialValue: cur ?? "" });
-				if (!input?.trim()) return;
-				modelStr = input.trim();
+				ctx.ui.notify(`Model for ${agentName}: ${map[agentName] ? `${map[agentName]} (override)` : `${cur ?? "(parent default)"}`}\nUsage: /subagent-model ${agentName} <provider/id> — type a space after the agent and pick from autocomplete (Tab completes, Enter on a highlighted match completes the arg).`, "info");
+				return;
 			}
 			const parsed = parseModelString(modelStr);
 			if (!parsed) {
