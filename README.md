@@ -54,6 +54,9 @@ The install will also symlink the commands
     - saved to `proxy/allowlist.txt` (bind-mounted into the proxy), so it persists across proxy restarts; if the proxy isn't running it is saved and applied on the next `pi-start`
 - `pi-list` -> `./bin/pi-list.sh`
     - lists saved (named/persistent) sessions with `running`/`stopped` status and their mounts
+- `pi-destroy` -> `./bin/pi-destroy.sh`
+    - destroys a named session created with `pi-start --name`: stops/removes its container, deletes its state volume, generated compose file, and saved mounts
+    - unknown or invalid names are reported without failing, so it is safe to run idempotently
 
 ## pi-start Usage
 Run one `pi-agent` per terminal. After the compose operation completes, the process automatically attaches to that agent and you can interact with the pi agent CLI.
@@ -85,11 +88,13 @@ Use the optional `--name` flag:
 pi-start --name myproject ./app1 ./app2   # create (or update mounts for) session "myproject"
 pi-start --name myproject                 # restart saved session "myproject" (reuses mounts + state volume)
 pi-list                                   # list saved sessions with running/stopped status
+pi-destroy --name myproject               # destroy the named session (container, volume, saved mounts)
 ```
 
 * Named sessions persist on exit (`stop`, not `down -v`): the compose file, `sessions/<name>/mounts.txt`, and `pi-volume-<name>` are kept, so restarting with `pi-start --name "<name>"` restores mounts and agent state.
 * Without `--name` (`pi-start ./app1`) the instance is ephemeral: fully cleaned (`down -v`) on exit and never shown in `pi-list` after it stops.
 * Updating mounts: `pi-start --name myproject ./newdir` overwrites the saved mounts and regenerates the compose file.
+* Destroying a named session permanently removes its state volume and saved mounts. `pi-destroy` accepts either `--name <name>` or the name as a positional argument, and reports unknown/invalid names without failing.
 
 ## pi-add-domain Usage
 

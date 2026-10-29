@@ -19,6 +19,7 @@ usage() {
   echo "  pi-start --name <name> <DIR...>    # create/update named persistent session"
   echo "  pi-start --name <name>             # restart saved named session"
   echo "  pi-list                            # list saved sessions"
+  echo "  pi-destroy --name <name>           # destroy a saved named session"
 }
 
 NAME=""

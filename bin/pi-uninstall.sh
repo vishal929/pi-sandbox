@@ -32,11 +32,12 @@ echo "Removing volumes and shared network..."
 podman volume ls --format '{{.Name}}' 2>/dev/null | grep -E '(pi-volume|squid-(cache|logs))' | xargs -r podman volume rm 2>/dev/null || true
 podman network rm pi-shared-net 2>/dev/null || true
 
-# remove the symlinks for pi-start, pi-uninstall, pi-add-domain, pi-list
+# remove the symlinks for pi-start, pi-uninstall, pi-add-domain, pi-list, pi-destroy
 rm -f ~/.local/bin/pi-start
 rm -f ~/.local/bin/pi-uninstall
 rm -f ~/.local/bin/pi-add-domain
 rm -f ~/.local/bin/pi-list
+rm -f ~/.local/bin/pi-destroy
 
 # nukes the install dir (this is what clears the saved allowlist)
 rm -rf ~/.local/share/pi-sandbox

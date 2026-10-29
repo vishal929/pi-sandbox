@@ -17,10 +17,12 @@ chmod +x ~/.local/share/pi-sandbox/bin/pi-start.sh
 chmod +x ~/.local/share/pi-sandbox/bin/pi-uninstall.sh
 chmod +x ~/.local/share/pi-sandbox/bin/pi-add-domain.sh
 chmod +x ~/.local/share/pi-sandbox/bin/pi-list.sh
+chmod +x ~/.local/share/pi-sandbox/bin/pi-destroy.sh
 ln -sf ~/.local/share/pi-sandbox/bin/pi-start.sh ~/.local/bin/pi-start
 ln -sf ~/.local/share/pi-sandbox/bin/pi-uninstall.sh ~/.local/bin/pi-uninstall
 ln -sf ~/.local/share/pi-sandbox/bin/pi-add-domain.sh ~/.local/bin/pi-add-domain
 ln -sf ~/.local/share/pi-sandbox/bin/pi-list.sh ~/.local/bin/pi-list
+ln -sf ~/.local/share/pi-sandbox/bin/pi-destroy.sh ~/.local/bin/pi-destroy
 
 echo "Successfully copied over pi-sandbox. Ensure you have podman/docker + podman-compose/docker-compose installed. Invoke the tool with pi-start and kill the stack with pi-stop." 
 echo "If you need to add additional domains to the allowlist, use the pi-add-domain command"
